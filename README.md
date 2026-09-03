@@ -14,16 +14,16 @@
 
 The library is configured to produce a NuGet package and symbol package with repository metadata, package readme, license metadata, and XML documentation.
 
-For self-hosted Dokploy registries, the integration derives a public `sslip.io` hostname automatically from the Dokploy server instead of prompting for a registry domain.
+For self-hosted Dokploy registries, the integration derives a public `sslip.io` hostname automatically from the Dokploy server instead of prompting for a registry domain. Saw how this was handled in the [sorvia-jomaxso/aspire](https://github.com/jomaxso/sorvia-aspire) repo. Very nice way to handle it.
 
 ## Build
 
 ```bash
-dotnet build /home/runner/work/Ridder.Aspire.Dokploy/Ridder.Aspire.Dokploy/Ridder.Aspire.Dokploy.slnx
+dotnet build ./Ridder.Aspire.Dokploy/Ridder.Aspire.Dokploy/Ridder.Aspire.Dokploy.slnx
 ```
 
 ## Pack
 
 ```bash
-dotnet pack /home/runner/work/Ridder.Aspire.Dokploy/Ridder.Aspire.Dokploy/src/Ridder.Aspire.Hosting.Dokploy/Ridder.Aspire.Hosting.Dokploy.csproj -c Release
+dotnet pack ./Ridder.Aspire.Dokploy/Ridder.Aspire.Dokploy/src/Ridder.Aspire.Hosting.Dokploy/Ridder.Aspire.Hosting.Dokploy.csproj -c Release
 ```
