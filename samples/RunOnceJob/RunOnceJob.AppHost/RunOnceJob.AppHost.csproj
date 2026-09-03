@@ -1,0 +1,16 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.4.6">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>859c5d75-d949-42ca-9e00-66d6f378cd7a</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../RunOnceJob.Service/RunOnceJob.Service.csproj" />
+    <ProjectReference Include="../../../src/Ridder.Hosting.Dokploy/Ridder.Hosting.Dokploy.csproj" IsAspireProjectResource="false" />
+  </ItemGroup>
+
+</Project>

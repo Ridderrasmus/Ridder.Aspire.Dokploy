@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/samples/" />
+  <Folder Name="/samples/ContainerVolume/">
+    <Project Path="samples/ContainerVolume/ContainerVolume.AppHost/ContainerVolume.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/samples/RunOnceJob/">
+    <Project Path="samples/RunOnceJob/RunOnceJob.AppHost/RunOnceJob.AppHost.csproj" />
+    <Project Path="samples/RunOnceJob/RunOnceJob.Service/RunOnceJob.Service.csproj" />
+  </Folder>
+  <Folder Name="/samples/SimpleWebApp/">
+    <Project Path="samples/SimpleWebApp/SimpleWebApp.ApiService/SimpleWebApp.ApiService.csproj" />
+    <Project Path="samples/SimpleWebApp/SimpleWebApp.AppHost/SimpleWebApp.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Ridder.Hosting.Dokploy/Ridder.Hosting.Dokploy.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>Ridder.Hosting.Dokploy</PackageId>
+    <Title>Ridder.Hosting.Dokploy</Title>
+    <Version>0.1.0</Version>
+    <Authors>ridderrasmus</Authors>
+    <Company>ridderrasmus</Company>
+    <Description>Dokploy publishing integration for .NET Aspire AppHosts, with environment-first registry configuration and publish-to-Dokploy helpers.</Description>
+    <PackageTags>aspire;dokploy;hosting;deployment;containers</PackageTags>
+    <PackageProjectUrl>https://github.com/Ridderrasmus/Ridder.Aspire.Dokploy</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Ridderrasmus/Ridder.Aspire.Dokploy</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <NoWarn>$(NoWarn);ASPIREATS001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting" Version="13.4.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="LICENSE" Pack="true" PackagePath="" />
+    <None Include="VENDORED.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+</Project>
