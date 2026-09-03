@@ -34,6 +34,7 @@ builder.Build().Run();
 - `samples/SimpleWebApp`
 - `samples/ContainerVolume`
 - `samples/RunOnceJob`
+- `samples/PostgresApp`
 
 ## Source provenance
 

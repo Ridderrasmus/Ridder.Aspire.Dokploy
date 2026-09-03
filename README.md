@@ -8,6 +8,7 @@
 - `samples/SimpleWebApp` shows a project deployment with external endpoints and custom Dokploy domains.
 - `samples/ContainerVolume` shows a container deployment with a self-hosted registry and persistent volume.
 - `samples/RunOnceJob` shows a one-shot project deployment for background jobs and migration-style workloads.
+- `samples/PostgresApp` shows a project plus PostgreSQL deployment with volume-backed storage.
 
 ## Packaging
 

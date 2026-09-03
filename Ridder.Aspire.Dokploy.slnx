@@ -3,6 +3,10 @@
   <Folder Name="/samples/ContainerVolume/">
     <Project Path="samples/ContainerVolume/ContainerVolume.AppHost/ContainerVolume.AppHost.csproj" />
   </Folder>
+  <Folder Name="/samples/PostgresApp/">
+    <Project Path="samples/PostgresApp/PostgresApp.ApiService/PostgresApp.ApiService.csproj" />
+    <Project Path="samples/PostgresApp/PostgresApp.AppHost/PostgresApp.AppHost.csproj" />
+  </Folder>
   <Folder Name="/samples/RunOnceJob/">
     <Project Path="samples/RunOnceJob/RunOnceJob.AppHost/RunOnceJob.AppHost.csproj" />
     <Project Path="samples/RunOnceJob/RunOnceJob.Service/RunOnceJob.Service.csproj" />
