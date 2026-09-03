@@ -48,7 +48,7 @@ internal abstract class DokployRegistryAnnotationBase : IDokployRegistryAnnotati
             ? await _passwordParameter.GetValueAsync(cancellationToken)
             : _password;
 
-        if (string.IsNullOrWhiteSpace(registryUrl))
+        if (string.IsNullOrWhiteSpace(registryUrl) && Mode != DokployRegistryMode.SelfHosted)
         {
             throw new InvalidOperationException("Registry URL is required.");
         }

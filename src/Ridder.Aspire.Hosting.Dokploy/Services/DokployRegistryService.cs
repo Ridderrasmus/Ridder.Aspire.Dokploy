@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Ridder.Aspire.Hosting.Dokploy.Models;
 using Ridder.Aspire.Hosting.Dokploy.Utilities;
+using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -38,11 +40,13 @@ internal sealed class DokployRegistryService
             throw new InvalidOperationException($"Project '{refreshedProject.Name}' has no usable environment (expected one named 'production').");
         }
 
+        var desiredRegistryUrl = await ResolveRegistryUrlAsync(refreshedProject).ConfigureAwait(false);
+
         if (_client.RegistrySettings.Mode == DokployRegistryMode.Hosted)
         {
             var hostedRegistryName = $"{refreshedProject.Name}-registry";
             var linkedHostedRegistry = await EnsureRegistryLinkedAsync(hostedRegistryName);
-            var hostedRegistryUrl = NormalizeRegistryHost(linkedHostedRegistry?.RegistryUrl ?? GetRegistryUrl());
+            var hostedRegistryUrl = NormalizeRegistryHost(linkedHostedRegistry?.RegistryUrl ?? desiredRegistryUrl);
             var hostedPushPrefix = ResolveHostedPushPrefix(hostedRegistryUrl, linkedHostedRegistry?.Username ?? _client.RegistrySettings.Username, linkedHostedRegistry?.ImagePrefix);
             return new DokployRegistry
             {
@@ -64,9 +68,9 @@ internal sealed class DokployRegistryService
         {
             var existingRegistryDetails = await GetComposeDetailsAsync(existingRegistry);
             await DeployComposeAsync(existingRegistryDetails);
-            await EnsureRegistryComposeDomainAsync(existingRegistryDetails);
-            var linkedRegistry = await EnsureRegistryLinkedAsync(existingRegistryDetails.Name);
-            var access = ResolveSelfHostedRegistryAccess(existingRegistryDetails, linkedRegistry);
+            await EnsureRegistryComposeDomainAsync(existingRegistryDetails, desiredRegistryUrl);
+            var linkedRegistry = await EnsureRegistryLinkedAsync(existingRegistryDetails.Name, desiredRegistryUrl);
+            var access = ResolveSelfHostedRegistryAccess(existingRegistryDetails, linkedRegistry, desiredRegistryUrl);
 
             _client.Logger.LogInformation("Registry compose already exists for project {ProjectName} in environment {EnvironmentName}.", refreshedProject.Name, targetEnvironment.Name);
             return new DokployRegistry
@@ -117,9 +121,9 @@ internal sealed class DokployRegistryService
 
         var verifiedRegistryDetails = await GetComposeDetailsAsync(verifiedRegistry);
         await DeployComposeAsync(verifiedRegistryDetails);
-        await EnsureRegistryComposeDomainAsync(verifiedRegistryDetails);
-        var linkedVerifiedRegistry = await EnsureRegistryLinkedAsync(verifiedRegistryDetails.Name);
-        var verifiedAccess = ResolveSelfHostedRegistryAccess(verifiedRegistryDetails, linkedVerifiedRegistry);
+        await EnsureRegistryComposeDomainAsync(verifiedRegistryDetails, desiredRegistryUrl);
+        var linkedVerifiedRegistry = await EnsureRegistryLinkedAsync(verifiedRegistryDetails.Name, desiredRegistryUrl);
+        var verifiedAccess = ResolveSelfHostedRegistryAccess(verifiedRegistryDetails, linkedVerifiedRegistry, desiredRegistryUrl);
 
         return new DokployRegistry
         {
@@ -135,23 +139,22 @@ internal sealed class DokployRegistryService
         };
     }
 
-    private RegistryAccess ResolveSelfHostedRegistryAccess(DokployCompose compose, DokployRemoteRegistry? linkedRegistry)
+    private RegistryAccess ResolveSelfHostedRegistryAccess(DokployCompose compose, DokployRemoteRegistry? linkedRegistry, string configuredRegistryUrl)
     {
-        var registryUrl = linkedRegistry?.RegistryUrl ?? GetRegistryUrl();
+        var registryUrl = linkedRegistry?.RegistryUrl ?? configuredRegistryUrl;
         var username = ResolveRegistryUsername(compose, linkedRegistry);
         var password = ResolveRegistryPassword(compose, linkedRegistry);
 
         return new RegistryAccess(registryUrl, username, password);
     }
 
-    private async Task EnsureRegistryComposeDomainAsync(DokployCompose compose)
+    private async Task EnsureRegistryComposeDomainAsync(DokployCompose compose, string registryHost)
     {
         if (string.IsNullOrWhiteSpace(compose.Id))
         {
             throw new InvalidOperationException($"Compose '{compose.Name}' has no composeId, so compose domain cannot be verified.");
         }
 
-        var registryHost = GetRegistryUrl();
         using var byComposeResponse = await _client.Http.GetAsync($"api/domain.byComposeId?composeId={Uri.EscapeDataString(compose.Id)}");
         byComposeResponse.EnsureSuccessStatusCode();
 
@@ -232,9 +235,9 @@ internal sealed class DokployRegistryService
         deployResponse.EnsureSuccessStatusCode();
     }
 
-    private async Task<DokployRemoteRegistry?> EnsureRegistryLinkedAsync(string registryName)
+    private async Task<DokployRemoteRegistry?> EnsureRegistryLinkedAsync(string registryName, string? registryUrl = null)
     {
-        var registryUrl = NormalizeRegistryHost(GetRegistryUrl());
+        registryUrl = NormalizeRegistryHost(registryUrl ?? _client.RegistrySettings.RegistryUrl);
         var username = _client.RegistrySettings.Username;
         var password = _client.RegistrySettings.Password;
         var imagePrefix = ResolveHostedPushPrefix(registryUrl, username, imagePrefix: null);
@@ -330,9 +333,27 @@ internal sealed class DokployRegistryService
         return DokployJsonPayload.ExtractLinkState(json.RootElement);
     }
 
-    private string GetRegistryUrl()
+    private async Task<string> ResolveRegistryUrlAsync(DokployProject project)
     {
-        return _client.RegistrySettings.RegistryUrl;
+        var configuredRegistryUrl = NormalizeRegistryHost(_client.RegistrySettings.RegistryUrl);
+        if (!string.IsNullOrWhiteSpace(configuredRegistryUrl))
+        {
+            return configuredRegistryUrl;
+        }
+
+        if (_client.RegistrySettings.Mode != DokployRegistryMode.SelfHosted)
+        {
+            throw new InvalidOperationException("Registry URL is required.");
+        }
+
+        var derivedRegistryUrl = await TryDerivePublicRegistryHostAsync(_client.Http.BaseAddress, project).ConfigureAwait(false);
+        if (!string.IsNullOrWhiteSpace(derivedRegistryUrl))
+        {
+            return derivedRegistryUrl;
+        }
+
+        throw new InvalidOperationException(
+            $"Could not derive a public registry hostname for Dokploy project '{project.Name}' from API URL '{_client.Http.BaseAddress}'.");
     }
 
     internal static string ResolveHostedPushPrefix(string registryUrl, string username, string? imagePrefix)
@@ -398,6 +419,62 @@ internal sealed class DokployRegistryService
         return string.Equals(registryUrl, "docker.io", StringComparison.OrdinalIgnoreCase)
             || string.Equals(registryUrl, "index.docker.io", StringComparison.OrdinalIgnoreCase)
             || string.Equals(registryUrl, "registry-1.docker.io", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task<string?> TryDerivePublicRegistryHostAsync(Uri? dokployBaseAddress, DokployProject project)
+    {
+        if (dokployBaseAddress is null || string.IsNullOrWhiteSpace(dokployBaseAddress.Host))
+        {
+            return null;
+        }
+
+        IPAddress? address;
+        if (!IPAddress.TryParse(dokployBaseAddress.Host, out address))
+        {
+            try
+            {
+                var addresses = await Dns.GetHostAddressesAsync(dokployBaseAddress.Host).ConfigureAwait(false);
+                address = addresses.FirstOrDefault(static candidate => candidate.AddressFamily == AddressFamily.InterNetwork);
+            }
+            catch (SocketException)
+            {
+                return null;
+            }
+        }
+
+        if (address is null || address.AddressFamily != AddressFamily.InterNetwork)
+        {
+            return null;
+        }
+
+        var projectSlug = SanitizeHostLabel(project.Name);
+        if (string.IsNullOrWhiteSpace(projectSlug))
+        {
+            return null;
+        }
+
+        var suffix = string.IsNullOrWhiteSpace(project.Id)
+            ? string.Empty
+            : $"-{CreateStableHostSuffix(project.Id)}";
+
+        return $"container-registry-{projectSlug}{suffix}.{address}.sslip.io";
+    }
+
+    private static string CreateStableHostSuffix(string value)
+    {
+        var sanitized = SanitizeHostLabel(value);
+        return sanitized.Length <= 8 ? sanitized : sanitized[..8];
+    }
+
+    private static string SanitizeHostLabel(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var sanitized = Regex.Replace(value.Trim().ToLowerInvariant(), @"[^a-z0-9-]+", "-");
+        return sanitized.Trim('-');
     }
 
     private static string ResolveRegistryUsername(DokployCompose compose, DokployRemoteRegistry? linkedRegistry)

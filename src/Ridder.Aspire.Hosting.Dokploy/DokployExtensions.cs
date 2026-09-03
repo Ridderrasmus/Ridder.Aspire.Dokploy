@@ -89,8 +89,11 @@ public static class DokployExtensions
     }
 
     /// <summary>
-    /// Configures the Dokploy environment to use a Dokploy-hosted container registry.
+    /// Configures the Dokploy environment to use a Dokploy-managed self-hosted container registry.
     /// </summary>
+    /// <remarks>
+    /// In publish mode, the integration derives a public registry host automatically from the Dokploy server instead of prompting for a registry domain.
+    /// </remarks>
     /// <param name="builder">The Dokploy environment builder.</param>
     /// <returns>The same builder instance for chaining.</returns>
     [AspireExport("withSelfHostedRegistry")]
@@ -98,21 +101,13 @@ public static class DokployExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        if (builder.ApplicationBuilder.ExecutionContext.IsRunMode)
-        {
-            builder.Resource.ReplaceDokployRegistryAnnotation(
-                new DokploySelfHostedRegistryAnnotation(string.Empty, DefaultRegistryUsername, DefaultRegistryPassword));
-            return builder;
-        }
-
-        var registryDomainParameter = builder.ApplicationBuilder.AddParameter($"{builder.Resource.Name}-registry-domain-url").Resource;
         builder.Resource.ReplaceDokployRegistryAnnotation(
-            new DokploySelfHostedRegistryAnnotation(registryDomainParameter, DefaultRegistryUsername, DefaultRegistryPassword));
+            new DokploySelfHostedRegistryAnnotation(string.Empty, DefaultRegistryUsername, DefaultRegistryPassword));
         return builder;
     }
 
     /// <summary>
-    /// Configures the Dokploy environment to use a Dokploy-hosted container registry with an explicit registry domain.
+    /// Configures the Dokploy environment to use a Dokploy-managed self-hosted container registry with an explicit registry domain override.
     /// </summary>
     /// <param name="builder">The Dokploy environment builder.</param>
     /// <param name="registryDomainUrl">The external registry domain used by Dokploy to host images.</param>
@@ -299,7 +294,7 @@ public static class DokployExtensions
     }
 
     /// <summary>
-    /// Adds a Dokploy environment using the legacy convenience API and configures it for a Dokploy-hosted registry.
+    /// Adds a Dokploy environment using the legacy convenience API and configures it for a Dokploy-managed self-hosted registry.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="name">The logical name of the Dokploy environment.</param>
@@ -311,7 +306,7 @@ public static class DokployExtensions
     }
 
     /// <summary>
-    /// Adds a Dokploy environment using the legacy convenience API and configures it for a Dokploy-hosted registry.
+    /// Adds a Dokploy environment using the legacy convenience API and configures it for a Dokploy-managed self-hosted registry.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="name">The logical name of the Dokploy environment.</param>
@@ -323,7 +318,7 @@ public static class DokployExtensions
     }
 
     /// <summary>
-    /// Adds a Dokploy environment using the legacy convenience API and configures it for a Dokploy-hosted registry with an explicit domain.
+    /// Adds a Dokploy environment using the legacy convenience API and configures it for a Dokploy-managed self-hosted registry with an explicit domain.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="name">The logical name of the Dokploy environment.</param>

@@ -3,7 +3,7 @@ using Ridder.Aspire.Hosting.Dokploy;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var dokploy = builder.AddDokployEnvironment("container-volume")
-    .WithSelfHostedRegistry("registry.example.com");
+    .WithSelfHostedRegistry();
 
 builder.AddContainer("whoami", "traefik/whoami", "v1.11.0")
     .WithHttpEndpoint(targetPort: 80, name: "http")

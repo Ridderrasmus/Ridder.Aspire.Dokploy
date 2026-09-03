@@ -14,6 +14,8 @@
 
 The library is configured to produce a NuGet package and symbol package with repository metadata, package readme, license metadata, and XML documentation.
 
+For self-hosted Dokploy registries, the integration derives a public `sslip.io` hostname automatically from the Dokploy server instead of prompting for a registry domain.
+
 ## Build
 
 ```bash

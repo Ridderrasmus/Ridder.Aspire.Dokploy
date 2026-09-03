@@ -83,7 +83,7 @@ internal sealed class DokployEnvironmentProvisioner : IDokployEnvironmentProvisi
             resolvedRegistrySettings);
 
         var projectService = new DokployProjectService(client);
-        var applicationService = new DokployApplicationService(client, projectService);
+        var registryService = new DokployRegistryService(client);
 
         var resources = context.Model.GetComputeResources().OfType<IComputeResource>().GetDokployComputeResources(resource);
         if (resources.Count == 0)
@@ -94,6 +94,23 @@ internal sealed class DokployEnvironmentProvisioner : IDokployEnvironmentProvisi
 
         var applications = new List<(IComputeResource Resource, DokployApplication Application)>();
         var projectName = resource.GetProjectName();
+        var project = await projectService.GetProjectOrCreateAsync(projectName);
+        var registry = await registryService.GetOrCreateRegistryAsync(project);
+
+        var effectiveRegistrySettings = new DokployResolvedRegistrySettings(
+            resolvedRegistrySettings.Mode,
+            registry.RegistryUrl,
+            registry.Username ?? resolvedRegistrySettings.Username,
+            registry.Password ?? resolvedRegistrySettings.Password,
+            resolvedRegistrySettings.RegistryType);
+
+        using var applicationClient = new DokployApiClient(
+            apiKeyValue,
+            apiUrlValue,
+            context.Services.GetRequiredService<IHostEnvironment>(),
+            context.Logger,
+            effectiveRegistrySettings);
+        var applicationService = new DokployApplicationService(applicationClient, new DokployProjectService(applicationClient));
 
         foreach (var computeResource in resources)
         {

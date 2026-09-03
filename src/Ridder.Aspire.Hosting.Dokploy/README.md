@@ -36,6 +36,10 @@ builder.Build().Run();
 - `samples/RunOnceJob`
 - `samples/PostgresApp`
 
+## Self-hosted registry hostnames
+
+`WithSelfHostedRegistry()` derives a public `sslip.io` hostname from the Dokploy server automatically, so publish-mode deployments do not need a separate registry domain parameter. Use the explicit overload only when you want to override that generated public hostname.
+
 ## Source provenance
 
 This package was extracted from the Dokploy Aspire integration used in `ScarletPigs/ScarletPigsServices` and adapted into a standalone package repository.
