@@ -63,6 +63,6 @@ internal abstract class DokployRegistryAnnotationBase : IDokployRegistryAnnotati
             throw new InvalidOperationException("Registry password is required.");
         }
 
-        return new DokployResolvedRegistrySettings(Mode, registryUrl, username, password, RegistryType);
+        return new DokployResolvedRegistrySettings(Mode, registryUrl ?? string.Empty, username, password, RegistryType);
     }
 }
