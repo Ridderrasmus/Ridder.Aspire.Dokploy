@@ -1,4 +1,4 @@
-using Ridder.Hosting.Dokploy;
+using Ridder.Aspire.Hosting.Dokploy;
 
 var builder = DistributedApplication.CreateBuilder(args);
 

@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../RunOnceJob.Service/RunOnceJob.Service.csproj" />
-    <ProjectReference Include="../../../src/Ridder.Hosting.Dokploy/Ridder.Hosting.Dokploy.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="../../../src/Ridder.Aspire.Hosting.Dokploy/Ridder.Aspire.Hosting.Dokploy.csproj" IsAspireProjectResource="false" />
   </ItemGroup>
 
 </Project>

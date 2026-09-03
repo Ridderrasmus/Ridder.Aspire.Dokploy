@@ -16,6 +16,6 @@
     <Project Path="samples/SimpleWebApp/SimpleWebApp.AppHost/SimpleWebApp.AppHost.csproj" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/Ridder.Hosting.Dokploy/Ridder.Hosting.Dokploy.csproj" />
+    <Project Path="src/Ridder.Aspire.Hosting.Dokploy/Ridder.Aspire.Hosting.Dokploy.csproj" />
   </Folder>
 </Solution>
